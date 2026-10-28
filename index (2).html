@@ -4,160 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Invernadero | Control Remoto</title>
-  <script src="[https://unpkg.com/mqtt/dist/mqtt.min.js](https://unpkg.com/mqtt/dist/mqtt.min.js)"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
-    :root { 
-      --bg: #121212; 
-      --card: #1e1e1e; 
-      --text: #e0e0e0; 
-      --accent: #3498db; 
-    }
-    body { 
-      font-family: 'Segoe UI', system-ui, sans-serif; 
-      background: var(--bg); 
-      color: var(--text); 
-      margin: 0; 
-      padding: 20px 15px; 
-      text-align: center; 
-      user-select: none; 
-    }
-    .card { 
-      max-width: 420px; 
-      margin: 0 auto 20px auto; 
-      background: var(--card); 
-      padding: 25px; 
-      border-radius: 16px; 
-      box-shadow: 0 8px 16px rgba(0,0,0,0.6); 
-      border: 1px solid #2a2a2a; 
-    }
-    h2 { 
-      margin: 0 0 20px 0; 
-      font-size: 22px; 
-      border-bottom: 2px solid #333; 
-      padding-bottom: 10px; 
-      color: #fff; 
-    }
-    .badge { 
-      display: inline-block; 
-      padding: 8px 16px; 
-      border-radius: 20px; 
-      font-size: 14px; 
-      font-weight: bold; 
-      margin-bottom: 20px; 
-      letter-spacing: 1px; 
-      transition: 0.3s; 
-    }
+    :root { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #3498db; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px 15px; text-align: center; user-select: none; }
+    .card { max-width: 420px; margin: 0 auto 20px auto; background: var(--card); padding: 25px; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.6); border: 1px solid #2a2a2a; }
+    h2 { margin: 0 0 20px 0; font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 10px; color: #fff; }
+    .badge { display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-bottom: 20px; letter-spacing: 1px; transition: 0.3s; }
     .offline { background: #4a1515; color: #ff7b7b; border: 1px solid #ff4d4d; }
     .online { background: #154a22; color: #75f08a; border: 1px solid #2ecc71; }
 
-    .control-group { 
-      background: #252525; 
-      padding: 15px; 
-      border-radius: 12px; 
-      margin-bottom: 15px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      border: 1px solid #333; 
-    }
+    .control-group { background: #252525; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
     .control-group label { font-weight: bold; color: #aaa; }
-    input[type="number"] { 
-      width: 70px; 
-      padding: 10px; 
-      font-size: 20px; 
-      text-align: center; 
-      border-radius: 8px; 
-      border: 1px solid #444; 
-      background: #121212; 
-      color: var(--accent); 
-      font-weight: bold; 
-      outline: none; 
-    }
-    input[type="password"] { 
-      width: 100%; 
-      padding: 12px; 
-      font-size: 22px; 
-      text-align: center; 
-      border-radius: 8px; 
-      border: 1px solid #555; 
-      background: #121212; 
-      color: #fff; 
-      letter-spacing: 8px; 
-      margin-bottom: 15px; 
-      box-sizing: border-box; 
-      outline: none; 
-      transition: border 0.3s; 
-    }
-    input[type="password"]:focus { border-color: var(--accent); }
+    input[type="number"], input[type="time"] { width: 70px; padding: 10px; font-size: 20px; text-align: center; border-radius: 8px; border: 1px solid #444; background: #121212; color: var(--accent); font-weight: bold; outline: none; }
+    .input-umbral { width: 100px !important; color: #f1c40f !important; }
+    .input-time { width: 130px !important; color: #9b59b6 !important; }
+    input:focus { border-color: #fff !important; background: #000 !important; }
     
-    .btn { 
-      width: 100%; 
-      padding: 18px; 
-      margin: 6px 0; 
-      font-size: 16px; 
-      font-weight: bold; 
-      border-radius: 12px; 
-      border: none; 
-      cursor: pointer; 
-      color: #fff; 
-      transition: 0.2s; 
-      text-transform: uppercase; 
-      letter-spacing: 1px; 
-    }
+    input[type="password"] { width: 100%; padding: 12px; font-size: 22px; text-align: center; border-radius: 8px; border: 1px solid #555; background: #121212; color: #fff; letter-spacing: 8px; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: border 0.3s; }
+    
+    .btn { width: 100%; padding: 18px; margin: 6px 0; font-size: 16px; font-weight: bold; border-radius: 12px; border: none; cursor: pointer; color: #fff; transition: 0.2s; text-transform: uppercase; letter-spacing: 1px; }
     .btn-abrir { background: linear-gradient(135deg, #2980b9, #1f618d); }
     .btn-cerrar { background: linear-gradient(135deg, #d35400, #a04000); }
     .btn-stop { background: linear-gradient(135deg, #c0392b, #922b21); margin-top: 15px; border: 2px solid #e74c3c; }
+    .btn-save { background: linear-gradient(135deg, #27ae60, #1e8449); margin-top: 10px; }
     .btn:active:not(:disabled) { transform: scale(0.95); opacity: 0.8; }
     .btn:disabled { background: #333; color: #666; border-color: #333; cursor: not-allowed; }
     
     .botones-extra { display: flex; gap: 10px; margin-top: 5px; flex-wrap: wrap; }
-    .btn-forzado { 
-      flex: 1;
-      min-width: 120px;
-      background: #333; 
-      border: 1px solid #555; 
-      padding: 12px; 
-      font-size: 12px; 
-      border-radius: 8px; 
-      color: #ccc; 
-    }
+    .btn-forzado { flex: 1; min-width: 120px; background: #333; border: 1px solid #555; padding: 12px; font-size: 12px; border-radius: 8px; color: #ccc; }
     .btn-forzado:active:not(:disabled) { background: #555; color: #fff; }
 
-    /* Clima UI */
-    .clima-grid { 
-      display: grid; 
-      grid-template-columns: 1fr 1fr; 
-      gap: 10px; 
-      margin-bottom: 15px; 
-    }
-    .clima-box { 
-      background: #252525; 
-      padding: 15px 5px; 
-      border-radius: 12px; 
-      border: 1px solid #333; 
-    }
+    .clima-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .clima-box { background: #252525; padding: 15px 5px; border-radius: 12px; border: 1px solid #333; }
     .clima-title { font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 5px; }
     .clima-val { font-size: 20px; font-weight: bold; color: #fff; }
-    .val-temp { color: #e74c3c; } 
-    .val-hum { color: #3498db; } 
-    .val-suelo { color: #2ecc71; } 
-    .val-fuerza { color: #f1c40f; }
+    .val-temp { color: #e74c3c; } .val-hum { color: #3498db; } .val-suelo { color: #2ecc71; } .val-fuerza { color: #f1c40f; }
 
     .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .log-box { 
-      background: #080808; 
-      border: 1px solid #333; 
-      border-radius: 8px; 
-      padding: 12px; 
-      height: 160px; 
-      overflow-y: auto; 
-      text-align: left; 
-      font-family: 'Courier New', Courier, monospace; 
-      font-size: 13px; 
-      line-height: 1.5; 
-      scroll-behavior: smooth; 
-      margin-bottom: 15px; 
-    }
+    .log-box { background: #080808; border: 1px solid #333; border-radius: 8px; padding: 12px; height: 160px; overflow-y: auto; text-align: left; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.5; scroll-behavior: smooth; margin-bottom: 15px; }
     .log-line { border-bottom: 1px dashed #1f1f1f; padding: 4px 0; word-wrap: break-word; }
   </style>
 </head>
@@ -168,25 +53,47 @@
     <div id="badgeEsp" class="badge offline">Buscando Invernadero...</div>
 
     <div class="control-group">
-      <label>⏱️ Automático:</label>
-      <div>
-        <input type="number" id="mins" min="1" max="15" value="1">
-        <span style="color:#aaa; margin-left:5px;">min.</span>
-      </div>
+      <label>⏱️ Minutos Manual:</label>
+      <div><input type="number" id="mins" min="1" max="15" value="1"><span style="color:#aaa; margin-left:5px;">min.</span></div>
     </div>
 
     <div style="text-align: left; margin-bottom: 5px; color: #aaa; font-size: 13px; font-weight: bold;">PIN de Seguridad:</div>
     <input type="password" id="pinInput" maxlength="4" placeholder="••••">
 
-    <button id="btnAbrir" class="btn btn-abrir" onclick="intentarDisparo('ABRIR')" disabled>▲ ABRIR TOLDO (AUTO)</button>
-    <button id="btnCerrar" class="btn btn-cerrar" onclick="intentarDisparo('CERRAR')" disabled>▼ CERRAR TOLDO (AUTO)</button>
+    <button id="btnAbrir" class="btn btn-abrir" onclick="intentarDisparo('ABRIR')" disabled>▲ ABRIR TOLDO</button>
+    <button id="btnCerrar" class="btn btn-cerrar" onclick="intentarDisparo('CERRAR')" disabled>▼ CERRAR TOLDO</button>
     
     <div class="botones-extra">
       <button id="btnForzAbrir" class="btn btn-forzado" disabled>⏫ ABRIR (Mantener)</button>
       <button id="btnForzCerrar" class="btn btn-forzado" disabled>⏬ CERRAR (Mantener)</button>
     </div>
-    
     <button id="btnStop" class="btn btn-stop" onclick="enviarParada()" disabled>🛑 PARADA INMEDIATA</button>
+  </div>
+
+  <div class="card">
+    <h2>⏰ Horarios Automáticos</h2>
+    <div class="control-group">
+      <label>Apertura:</label>
+      <input type="time" id="timeAbrir" class="input-time">
+    </div>
+    <div class="control-group">
+      <label>Cierre:</label>
+      <input type="time" id="timeCerrar" class="input-time">
+    </div>
+    <button id="btnHorarios" class="btn btn-save" onclick="guardarHorarios()" disabled>💾 Guardar Horarios</button>
+  </div>
+
+  <div class="card">
+    <h2>⚙️ Umbrales de Protección</h2>
+    <div class="control-group">
+      <label>Umbral Abrir:</label>
+      <input type="number" id="umbralAbrir" class="input-umbral" step="50">
+    </div>
+    <div class="control-group">
+      <label>Umbral Cerrar:</label>
+      <input type="number" id="umbralCerrar" class="input-umbral" step="50">
+    </div>
+    <button id="btnUmbrales" class="btn btn-save" onclick="guardarUmbrales()" disabled>💾 Guardar Umbrales</button>
   </div>
 
   <div class="card">
@@ -213,24 +120,27 @@
     const TOPIC_STATUS = "casa/cortina/status";
     const TOPIC_LOGS   = "casa/cortina/logs";
 
-    const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+    const client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
+      keepalive: 30,
+      reconnectPeriod: 3000
+    });
 
     const badgeEsp = document.getElementById('badgeEsp');
     const btns = [
-      document.getElementById('btnAbrir'), 
-      document.getElementById('btnCerrar'), 
-      document.getElementById('btnStop'), 
-      document.getElementById('btnForzAbrir'), 
-      document.getElementById('btnForzCerrar')
+      document.getElementById('btnAbrir'), document.getElementById('btnCerrar'), 
+      document.getElementById('btnStop'), document.getElementById('btnForzAbrir'), 
+      document.getElementById('btnForzCerrar'), document.getElementById('btnUmbrales'),
+      document.getElementById('btnHorarios')
     ];
     const logContainer = document.getElementById('logContainer');
     const logClimaContainer = document.getElementById('logClimaContainer');
     const inputPin = document.getElementById('pinInput');
 
+    // Candado temporal para que al darle "Guardar" no te pise el número hasta que el ESP responda
+    let bloqueoEdicionHasta = 0;
+
     window.onload = () => { 
-      if (localStorage.getItem('pinInvernadero')) {
-        inputPin.value = localStorage.getItem('pinInvernadero'); 
-      }
+      if (localStorage.getItem('pinInvernadero')) { inputPin.value = localStorage.getItem('pinInvernadero'); }
     };
 
     client.on('connect', () => { 
@@ -247,13 +157,8 @@
     client.on('message', (topic, message) => {
       const msg = message.toString();
       if (topic === TOPIC_STATUS) {
-        if (msg === "ONLINE") {
-          forzarOnline();
-        } else { 
-          badgeEsp.className = "badge offline"; 
-          badgeEsp.innerText = "INVERNADERO DESCONECTADO"; 
-          btns.forEach(b => b.disabled = true); 
-        }
+        if (msg === "ONLINE") { forzarOnline(); } 
+        else { badgeEsp.className = "badge offline"; badgeEsp.innerText = "INVERNADERO DESCONECTADO"; btns.forEach(b => b.disabled = true); }
       }
       
       if (topic === TOPIC_LOGS) {
@@ -265,20 +170,21 @@
             document.getElementById('rt-temp').innerText = data.rt_temp + "°C";
             document.getElementById('rt-hum').innerText = data.rt_hum + "%";
             document.getElementById('rt-suelo').innerText = data.rt_suelo;
-            
-            if(data.rt_fuerza == "0" || data.rt_fuerza == undefined) {
-               document.getElementById('rt-fuerza').innerText = "Reposo";
-            } else {
-               document.getElementById('rt-fuerza').innerText = data.rt_fuerza;
-            }
+            document.getElementById('rt-fuerza').innerText = (data.rt_fuerza == "0" || data.rt_fuerza == undefined) ? "Reposo" : data.rt_fuerza;
+          }
+
+          // Solo actualiza los campos si el usuario NO los está editando y no acaba de tocar Guardar
+          if (Date.now() > bloqueoEdicionHasta) {
+            if(data.u_abrir && document.activeElement.id !== 'umbralAbrir') document.getElementById('umbralAbrir').value = data.u_abrir;
+            if(data.u_cerrar && document.activeElement.id !== 'umbralCerrar') document.getElementById('umbralCerrar').value = data.u_cerrar;
+            if(data.h_abrir && document.activeElement.id !== 'timeAbrir') document.getElementById('timeAbrir').value = data.h_abrir;
+            if(data.h_cerrar && document.activeElement.id !== 'timeCerrar') document.getElementById('timeCerrar').value = data.h_cerrar;
           }
 
           if(data.logsClima) {
             let htmlClima = "";
-            data.logsClima.slice().reverse().forEach(l => {
-              if(l !== "") htmlClima += `<div class="log-line"><span style="color:#00d2d3;">${l}</span></div>`;
-            });
-            logClimaContainer.innerHTML = htmlClima || "Sin registros de promedios aún (Espera a las 08:00 o 20:00).";
+            data.logsClima.slice().reverse().forEach(l => { if(l !== "") htmlClima += `<div class="log-line"><span style="color:#00d2d3;">${l}</span></div>`; });
+            logClimaContainer.innerHTML = htmlClima || "Sin registros de promedios aún.";
           }
 
           if(data.logsMotor) {
@@ -288,16 +194,23 @@
               if (l.includes("físico") || l.includes("Web") || l.includes("Internet")) color = "#3498db"; 
               if (l.includes("FORZADO")) color = "#e67e22"; 
               if (l.includes("STOP") || l.includes("Detenido") || l.includes("soltado") || l.includes("SOBRECARGA") || l.includes("Pico:")) color = "#e74c3c"; 
-              if (l.includes("Iniciado")) color = "#f1c40f"; 
+              if (l.includes("Iniciado") || l.includes("Umbrales") || l.includes("Horarios")) color = "#f1c40f"; 
               htmlMotor += `<div class="log-line"><span style="color:${color};">${l}</span></div>`;
             });
-            const scrollBottom = logContainer.scrollHeight - logContainer.scrollTop === logContainer.clientHeight;
+            const scrollBottom = logContainer.scrollHeight - logContainer.scrollTop <= logContainer.clientHeight + 20;
             logContainer.innerHTML = htmlMotor || "Sin registros.";
             if (scrollBottom) logContainer.scrollTop = logContainer.scrollHeight;
           }
-        } catch (e) { console.error("Error leyendo datos JSON"); }
+        } catch (e) { console.error("Error JSON"); }
       }
     });
+
+    function verificarPin() {
+      const pin = inputPin.value;
+      if (pin !== PIN_CORRECTO) { alert("PIN incorrecto."); inputPin.value = ""; localStorage.removeItem('pinInvernadero'); return false; }
+      localStorage.setItem('pinInvernadero', pin);
+      return true;
+    }
 
     function enviarParada() { 
       client.publish(TOPIC_CMD, "STOP"); 
@@ -306,45 +219,56 @@
     }
 
     function intentarDisparo(direccion) {
-      const pin = inputPin.value;
-      if (pin !== PIN_CORRECTO) { 
-        alert("PIN incorrecto."); 
-        inputPin.value = ""; 
-        localStorage.removeItem('pinInvernadero'); 
-        return; 
-      }
-      localStorage.setItem('pinInvernadero', pin);
+      if(!verificarPin()) return;
       const minutos = parseInt(document.getElementById('mins').value);
       if (minutos <= 0 || isNaN(minutos)) return;
       document.getElementById('btnAbrir').disabled = true; 
       document.getElementById('btnCerrar').disabled = true;
       client.publish(TOPIC_CMD, `${direccion}:${minutos * 60}`);
+      setTimeout(() => {
+        document.getElementById('btnAbrir').disabled = false; 
+        document.getElementById('btnCerrar').disabled = false;
+      }, 2000);
     }
 
-    function iniciarForzado(direccion) {
-      if (inputPin.value !== PIN_CORRECTO) { alert("PIN incorrecto."); return; }
-      localStorage.setItem('pinInvernadero', inputPin.value);
-      client.publish(TOPIC_CMD, `${direccion}_FORZADO:999`); 
-    }
-    
+    function iniciarForzado(direccion) { if(!verificarPin()) return; client.publish(TOPIC_CMD, `${direccion}_FORZADO:999`); }
     function detenerForzado() { client.publish(TOPIC_CMD, "STOP"); }
 
-    const btnFA = document.getElementById('btnForzAbrir'); 
-    const btnFC = document.getElementById('btnForzCerrar');
-    
-    btnFA.addEventListener('mousedown', () => iniciarForzado('ABRIR')); 
-    btnFA.addEventListener('mouseup', detenerForzado); 
-    btnFA.addEventListener('mouseleave', detenerForzado); 
-    
-    btnFC.addEventListener('mousedown', () => iniciarForzado('CERRAR')); 
-    btnFC.addEventListener('mouseup', detenerForzado); 
-    btnFC.addEventListener('mouseleave', detenerForzado);
-    
-    btnFA.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarForzado('ABRIR'); }); 
-    btnFA.addEventListener('touchend', (e) => { e.preventDefault(); detenerForzado(); });
-    
-    btnFC.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarForzado('CERRAR'); }); 
-    btnFC.addEventListener('touchend', (e) => { e.preventDefault(); detenerForzado(); });
+    function feedbackBoton(idBoton, textoOriginal) {
+      const btn = document.getElementById(idBoton);
+      btn.innerText = "✅ ¡ENVIADO!";
+      setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
+    }
+
+    function guardarUmbrales() {
+      if(!verificarPin()) return;
+      const abrirVal = document.getElementById('umbralAbrir').value;
+      const cerrarVal = document.getElementById('umbralCerrar').value;
+      if (!abrirVal || !cerrarVal) { alert("Completá ambos umbrales."); return; }
+      bloqueoEdicionHasta = Date.now() + 5000;
+      client.publish(TOPIC_CMD, `UMBRALES:${abrirVal},${cerrarVal}`);
+      feedbackBoton('btnUmbrales', '💾 Guardar Umbrales');
+    }
+
+    function guardarHorarios() {
+      if(!verificarPin()) return;
+      const tAbrir = document.getElementById('timeAbrir').value;
+      const tCerrar = document.getElementById('timeCerrar').value;
+      if (!tAbrir || !tCerrar) { alert("Completá ambos horarios."); return; }
+      
+      const [hA, mA] = tAbrir.split(':');
+      const [hC, mC] = tCerrar.split(':');
+      
+      bloqueoEdicionHasta = Date.now() + 5000;
+      client.publish(TOPIC_CMD, `HORARIOS:${parseInt(hA)},${parseInt(mA)},${parseInt(hC)},${parseInt(mC)}`);
+      feedbackBoton('btnHorarios', '💾 Guardar Horarios');
+    }
+
+    const btnFA = document.getElementById('btnForzAbrir'); const btnFC = document.getElementById('btnForzCerrar');
+    btnFA.addEventListener('mousedown', () => iniciarForzado('ABRIR')); btnFA.addEventListener('mouseup', detenerForzado); btnFA.addEventListener('mouseleave', detenerForzado); 
+    btnFC.addEventListener('mousedown', () => iniciarForzado('CERRAR')); btnFC.addEventListener('mouseup', detenerForzado); btnFC.addEventListener('mouseleave', detenerForzado);
+    btnFA.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarForzado('ABRIR'); }); btnFA.addEventListener('touchend', (e) => { e.preventDefault(); detenerForzado(); });
+    btnFC.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarForzado('CERRAR'); }); btnFC.addEventListener('touchend', (e) => { e.preventDefault(); detenerForzado(); });
   </script>
 </body>
 </html>
